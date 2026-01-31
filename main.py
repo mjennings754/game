@@ -1,6 +1,7 @@
 import pygame
 import os
 pygame.init()
+clock = pygame.time.Clock()
 screen = pygame.display.set_mode((1280, 960))
 pygame.display.set_caption("DragonHunter")
 background_img = pygame.image.load('images/background/default.png').convert_alpha()
@@ -9,6 +10,11 @@ new_width = original_width * 4
 new_height = original_height * 4
 new_size = (new_width, new_height)
 new_bg = pygame.transform.scale(background_img, new_size)
+
+moving_left = False
+moving_right = False
+
+FPS = 60
 
 def draw_bg():
     screen.blit(new_bg, (0, 0))
@@ -21,7 +27,6 @@ class Player(pygame.sprite.Sprite):
         self.frame_index = 0
         self.action = 0
         self.update_time = pygame.time.get_ticks()
-        
 
         animation_types = ['idle']
         for animation in animation_types:
@@ -42,6 +47,7 @@ class Player(pygame.sprite.Sprite):
         self.flip = False
         self.scale = scale
         self.speed = speed
+        self.direction = 1
 
     def update(self):
         self.update_animation()
@@ -61,17 +67,47 @@ class Player(pygame.sprite.Sprite):
     def draw(self):
         screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
 
+    def move(self, moving_left, moving_right):
+        dx = 0
+        dy = 0
+        if moving_left:
+            dx = -self.speed
+            self.flip = True
+            self.direction = -1
+        if moving_right:
+            dx = self.speed
+            self.flip = False
+            self.direction = 1
+
+        self.rect.x += dx
+        self.rect.y += dy
+
+
 player = Player(200, 400, 3, 5)
 
 
 running = True
 while running:
+    clock.tick(FPS)
     draw_bg()
     player.update()
     player.draw()
+    player.move(moving_left, moving_right)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_a:
+                moving_left = True
+            if event.key == pygame.K_d:
+                moving_right = True
+            
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_a:
+                moving_left = False
+            if event.key == pygame.K_d:
+                moving_right = False
     pygame.display.update()
 
 pygame.quit()
