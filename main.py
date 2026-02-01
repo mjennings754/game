@@ -10,14 +10,27 @@ new_width = original_width * 4
 new_height = original_height * 4
 new_size = (new_width, new_height)
 new_bg = pygame.transform.scale(background_img, new_size)
+floor_img = pygame.image.load('images/tiles/floor.png').convert_alpha()
+original_floor_width, original_floor_height = floor_img.get_size()
+new_floor_width = original_floor_width * 4
+new_floor_height = original_floor_height * 4
+new_floor_size = (new_floor_width, new_floor_height)
+new_floor = pygame.transform.scale(floor_img, new_floor_size)
+
 
 moving_left = False
 moving_right = False
+
+tile_width = 32
+floor = 828
 
 FPS = 60
 
 def draw_bg():
     screen.blit(new_bg, (0, 0))
+
+def create_floor():
+    screen.blit(new_floor, (0, 700))
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, scale, speed):
@@ -90,6 +103,7 @@ running = True
 while running:
     clock.tick(FPS)
     draw_bg()
+    create_floor()
     player.update()
     player.draw()
     player.move(moving_left, moving_right)
