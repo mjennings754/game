@@ -133,7 +133,7 @@ while running:
                 moving_left = True
             if event.key == pygame.K_d:
                 moving_right = True
-            if event.key == pygame.K_w:
+            if event.key == pygame.K_w or event.key == pygame.K_SPACE:
                 player.jump = True
             
         if event.type == pygame.KEYUP:
