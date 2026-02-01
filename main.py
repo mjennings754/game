@@ -17,6 +17,12 @@ new_floor_height = original_floor_height * 4
 new_floor_size = (new_floor_width, new_floor_height)
 new_floor = pygame.transform.scale(floor_img, new_floor_size)
 
+health_bar_img = pygame.image.load('images/healthbar.png').convert_alpha()
+damage_bar_img = pygame.image.load('images/damage.png').convert_alpha()
+
+damage_bar_img = pygame.transform.scale(damage_bar_img, (100, 20))
+health_bar_img = pygame.transform.scale(health_bar_img, (100, 20))
+
 # floor_img & background_img
 
 GRAVITY = 0.75
@@ -46,6 +52,8 @@ class Player(pygame.sprite.Sprite):
         self.frame_index = 0
         self.action = 0
         self.update_time = pygame.time.get_ticks()
+        self.health = 100
+        self.max_health = self.health
 
         animation_types = ['idle']
         for animation in animation_types:
@@ -132,6 +140,19 @@ class Player(pygame.sprite.Sprite):
         bg_scroll -= screen_scroll // 4
         floor_scroll -= screen_scroll
 
+    def draw_healthbar(self):
+        bar_x = self.rect.centerx - health_bar_img.get_width() // 2
+        bar_y = self.rect.top - 25
+
+        screen.blit(health_bar_img, (bar_x, bar_y))
+
+        health_ratio = self.health / self.max_health
+        current_health_width = int(damage_bar_img.get_width() * health_ratio)
+
+        if current_health_width > 0:
+            green_bar = pygame.transform.scale(health_bar_img, (current_health_width, health_bar_img.get_height()))
+            screen.blit(green_bar, (bar_x, bar_y))
+
 player = Player(200, 400, 3, 5)
 
 
@@ -141,6 +162,7 @@ while running:
     draw_bg()
     player.update()
     player.draw()
+    player.draw_healthbar()
     player.move(moving_left, moving_right)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
