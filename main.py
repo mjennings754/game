@@ -154,6 +154,9 @@ class Player(pygame.sprite.Sprite):
             green_bar = pygame.transform.scale(health_bar_img, (current_health_width, health_bar_img.get_height()))
             screen.blit(green_bar, (bar_x, bar_y))
 
+def draw_enemy(enemy, scroll):
+    screen.blit(pygame.transform.flip(enemy.image, enemy.flip, False), (enemy.rect.x + scroll, enemy.rect.y))
+
 player = Player("player", 200, 400, 3, 5)
 enemy = Player("zombie", 200, 650, 3, 5)
 
@@ -166,7 +169,7 @@ while running:
     player.draw_healthbar()
     player.move(moving_left, moving_right)
     enemy.update()
-    enemy.draw()
+    draw_enemy(enemy, floor_scroll)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
