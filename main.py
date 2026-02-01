@@ -61,7 +61,7 @@ class Player(pygame.sprite.Sprite):
         self.vision = pygame.Rect(0, 0, 150, 20)
         self.move_counter = 0
         self.last_hit_time = 0
-        self.hit_cooldown = 600
+        self.hit_cooldown = 100
 
         animation_types = ['idle']
         for animation in animation_types:
@@ -177,21 +177,31 @@ class Player(pygame.sprite.Sprite):
                 self.update_action(0)
                 self.idling = True
                 self.idling_counter = 50
-            
-            if self.vision.colliderect(player.rect):
-                player.take_damage(10)
-                print(player.health)
+
+            attack_range = 50
+            attack_height = self.rect.height
+            attack_rect = pygame.Rect(0, 0, attack_range, attack_height)
+
+            if self.direction == 1:
+                attack_rect.topleft = (self.rect.right, self.rect.top)
             else:
-                if self.idling == False:
+                attack_rect.topright = (self.rect.left, self.rect.top)
+
+            if attack_rect.colliderect(player.rect):
+                player.take_damage(5)
+
+            else:
+                if not self.idling:
                     if self.direction == 1:
                         ai_moving_right = True
                     else:
                         ai_moving_right = False
-                    ai_moving_left = not ai_moving_right
-                    self.move(ai_moving_left, ai_moving_right)
-                    self.update_action(0)
-                    self.move_counter += 1
-                    self.vision.center = (self.rect.centerx + 75 * self.direction, self.rect.centery)
+                        ai_moving_left = not ai_moving_right
+                        self.move(ai_moving_left, ai_moving_right)
+                        self.update_action(0)
+                        self.move_counter += 1
+            
+            self.vision.center = (self.rect.centerx + 75 * self.direction, self.rect.centery)
 
         self.rect.x += screen_scroll
 
@@ -204,7 +214,7 @@ def draw_enemy(enemy, scroll):
     screen.blit(pygame.transform.flip(enemy.image, enemy.flip, False), (enemy.rect.x + scroll, enemy.rect.y))
 
 player = Player("player", 200, 400, 3, 5)
-enemy = Player("zombie", 200, 650, 3, 5)
+enemy = Player("zombie", 500, 650, 3, 5)
 
 
 running = True
