@@ -45,7 +45,7 @@ def draw_bg():
         screen.blit(new_floor, (x * new_floor.get_width() + floor_scroll, floor_y))
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, x, y, scale, speed):
+    def __init__(self, char_type, x, y, scale, speed):
         pygame.sprite.Sprite.__init__(self)
         self.alive = True
         self.animation_list = []
@@ -54,13 +54,14 @@ class Player(pygame.sprite.Sprite):
         self.update_time = pygame.time.get_ticks()
         self.health = 100
         self.max_health = self.health
+        self.char_type = char_type
 
         animation_types = ['idle']
         for animation in animation_types:
             temp_list = []
-            num_of_frames = len(os.listdir(f'images/player/{animation}'))
+            num_of_frames = len(os.listdir(f'images/{self.char_type}/{animation}'))
             for i in range(num_of_frames):
-                img = pygame.image.load(f'images/player/{animation}/{i}.png').convert_alpha()
+                img = pygame.image.load(f'images/{self.char_type}/{animation}/{i}.png').convert_alpha()
                 img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height()) * scale))
                 temp_list.append(img)
             self.animation_list.append(temp_list)
@@ -153,8 +154,8 @@ class Player(pygame.sprite.Sprite):
             green_bar = pygame.transform.scale(health_bar_img, (current_health_width, health_bar_img.get_height()))
             screen.blit(green_bar, (bar_x, bar_y))
 
-player = Player(200, 400, 3, 5)
-
+player = Player("player", 200, 400, 3, 5)
+enemy = Player("zombie", 200, 650, 3, 5)
 
 running = True
 while running:
@@ -164,6 +165,8 @@ while running:
     player.draw()
     player.draw_healthbar()
     player.move(moving_left, moving_right)
+    enemy.update()
+    enemy.draw()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
