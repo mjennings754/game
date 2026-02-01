@@ -1,5 +1,6 @@
 import pygame
 import os
+import random
 pygame.init()
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode((1280, 960))
@@ -55,6 +56,12 @@ class Player(pygame.sprite.Sprite):
         self.health = 100
         self.max_health = self.health
         self.char_type = char_type
+        self.idling = False
+        self.idling_counter = 0
+        self.vision = pygame.Rect(0, 0, 150, 20)
+        self.move_counter = 0
+        self.last_hit_time = 0
+        self.hit_cooldown = 600
 
         animation_types = ['idle']
         for animation in animation_types:
@@ -66,7 +73,7 @@ class Player(pygame.sprite.Sprite):
                 temp_list.append(img)
             self.animation_list.append(temp_list)
         self.image = self.animation_list[self.action][self.frame_index]
-        self.rect = img.get_rect()
+        self.rect = self.image.get_rect()
         self.rect.center = (x, y)
         self.width = self.image.get_width()
         self.height = self.image.get_height()
@@ -89,13 +96,20 @@ class Player(pygame.sprite.Sprite):
             self.update_time = pygame.time.get_ticks()
             self.frame_index += 1
         if self.frame_index >= len(self.animation_list[self.action]):
-            if self.action == 5:
-                self.frame_index = len(self.animation_list[self.action]) - 1
-            else:
-                self.frame_index = 0
+            self.frame_index = 0
 
     def draw(self):
         screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+
+    def take_damage(self, amount):
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_hit_time >= self.hit_cooldown:
+            self.health -= amount
+            self.last_hit_time = current_time
+
+            if self.health <= 0:
+                self.health = 0
+                self.alive = False
 
     def move(self, moving_left, moving_right):
         global screen_scroll, bg_scroll, floor_scroll
@@ -141,18 +155,50 @@ class Player(pygame.sprite.Sprite):
         bg_scroll -= screen_scroll // 4
         floor_scroll -= screen_scroll
 
+    def attack():
+        pass
+
     def draw_healthbar(self):
         bar_x = self.rect.centerx - health_bar_img.get_width() // 2
         bar_y = self.rect.top - 25
 
-        screen.blit(health_bar_img, (bar_x, bar_y))
+        screen.blit(damage_bar_img, (bar_x, bar_y))
 
         health_ratio = self.health / self.max_health
-        current_health_width = int(damage_bar_img.get_width() * health_ratio)
+        current_health_width = int(health_bar_img.get_width() * health_ratio)
 
         if current_health_width > 0:
             green_bar = pygame.transform.scale(health_bar_img, (current_health_width, health_bar_img.get_height()))
             screen.blit(green_bar, (bar_x, bar_y))
+
+    def ai(self):
+        if self.alive and player.alive:
+            if self.idling == False and random.randint(1, 200) == 1:
+                self.update_action(0)
+                self.idling = True
+                self.idling_counter = 50
+            
+            if self.vision.colliderect(player.rect):
+                player.take_damage(10)
+                print(player.health)
+            else:
+                if self.idling == False:
+                    if self.direction == 1:
+                        ai_moving_right = True
+                    else:
+                        ai_moving_right = False
+                    ai_moving_left = not ai_moving_right
+                    self.move(ai_moving_left, ai_moving_right)
+                    self.update_action(0)
+                    self.move_counter += 1
+                    self.vision.center = (self.rect.centerx + 75 * self.direction, self.rect.centery)
+
+        self.rect.x += screen_scroll
+
+    def update_action(self, new_action):
+        self.action = new_action
+        self.frame_index = 0
+        self.update_time = pygame.time.get_ticks()
 
 def draw_enemy(enemy, scroll):
     screen.blit(pygame.transform.flip(enemy.image, enemy.flip, False), (enemy.rect.x + scroll, enemy.rect.y))
@@ -160,16 +206,18 @@ def draw_enemy(enemy, scroll):
 player = Player("player", 200, 400, 3, 5)
 enemy = Player("zombie", 200, 650, 3, 5)
 
+
 running = True
 while running:
     clock.tick(FPS)
     draw_bg()
+    enemy.ai()
+    enemy.update()
+    draw_enemy(enemy, floor_scroll)
     player.update()
     player.draw()
     player.draw_healthbar()
     player.move(moving_left, moving_right)
-    enemy.update()
-    draw_enemy(enemy, floor_scroll)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
