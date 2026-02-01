@@ -17,21 +17,26 @@ new_floor_height = original_floor_height * 4
 new_floor_size = (new_floor_width, new_floor_height)
 new_floor = pygame.transform.scale(floor_img, new_floor_size)
 
+# floor_img & background_img
+
 GRAVITY = 0.75
+SCROLL_THRESH = 200
+screen_scroll = 0
+floor_scroll = 0
+bg_scroll = 0
 
 moving_left = False
 moving_right = False
 
 tile_width = 32
-floor = 828
+floor_y = 700
 
 FPS = 60
 
 def draw_bg():
-    screen.blit(new_bg, (0, 0))
-
-def create_floor():
-    screen.blit(new_floor, (0, 700))
+    for x in range(-1, 3):
+        screen.blit(new_bg, (x * new_bg.get_width() + bg_scroll, 0))
+        screen.blit(new_floor, (x * new_floor.get_width() + floor_scroll, floor_y))
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, scale, speed):
@@ -84,6 +89,10 @@ class Player(pygame.sprite.Sprite):
         screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
 
     def move(self, moving_left, moving_right):
+        global screen_scroll, bg_scroll, floor_scroll
+
+        screen_scroll = 0
+        
         dx = 0
         dy = 0
         if moving_left:
@@ -112,6 +121,16 @@ class Player(pygame.sprite.Sprite):
         self.rect.x += dx
         self.rect.y += dy
 
+        if self.rect.right > 1280 - SCROLL_THRESH:
+            screen_scroll = self.rect.right - (1280 - SCROLL_THRESH)
+            self.rect.right = 1280 - SCROLL_THRESH
+
+        elif self.rect.left < SCROLL_THRESH:
+            screen_scroll = self.rect.left - SCROLL_THRESH
+            self.rect.left = SCROLL_THRESH
+
+        bg_scroll -= screen_scroll // 4
+        floor_scroll -= screen_scroll
 
 player = Player(200, 400, 3, 5)
 
@@ -120,10 +139,11 @@ running = True
 while running:
     clock.tick(FPS)
     draw_bg()
-    create_floor()
     player.update()
     player.draw()
     player.move(moving_left, moving_right)
+
+    print(screen_scroll)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
