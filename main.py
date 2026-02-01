@@ -142,8 +142,6 @@ while running:
     player.update()
     player.draw()
     player.move(moving_left, moving_right)
-
-    print(screen_scroll)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
