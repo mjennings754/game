@@ -17,6 +17,7 @@ new_floor_height = original_floor_height * 4
 new_floor_size = (new_floor_width, new_floor_height)
 new_floor = pygame.transform.scale(floor_img, new_floor_size)
 
+GRAVITY = 0.75
 
 moving_left = False
 moving_right = False
@@ -61,6 +62,8 @@ class Player(pygame.sprite.Sprite):
         self.scale = scale
         self.speed = speed
         self.direction = 1
+        self.jump = False
+        self.vel_y = 0
 
     def update(self):
         self.update_animation()
@@ -92,6 +95,20 @@ class Player(pygame.sprite.Sprite):
             self.flip = False
             self.direction = 1
 
+        if self.jump == True:
+            self.vel_y = -11
+            self.jump = False
+
+        self.vel_y += GRAVITY
+        if self.vel_y > 10:
+            self.vel_y
+        dy += self.vel_y
+
+        # check collision
+        if self.rect.bottom + dy > 700:
+            dy = 700 - self.rect.bottom
+
+
         self.rect.x += dx
         self.rect.y += dy
 
@@ -116,12 +133,17 @@ while running:
                 moving_left = True
             if event.key == pygame.K_d:
                 moving_right = True
+            if event.key == pygame.K_w:
+                player.jump = True
             
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a:
                 moving_left = False
             if event.key == pygame.K_d:
                 moving_right = False
+            if event.key == pygame.K_w:
+                player.jump = False
+            
     pygame.display.update()
 
 pygame.quit()
